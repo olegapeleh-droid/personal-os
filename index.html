@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Personal OS">
+<meta name="theme-color" content="#0e0e0e">
+<title>Personal OS v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0e0e;--s1:#161616;--s2:#1c1c1c;--s3:#222;
+  --b:#272727;--b2:#333;
+  --gold:#c8a96e;--teal:#7eb8a4;--purple:#b07ab0;--red:#e07070;--blue:#6b9fd4;
+  --text:#e8e4dc;--muted:#5a5a5a;--dim:#3a3a3a;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Crimson Pro',serif;font-size:16px}
+#app{display:flex;flex-direction:column;height:100%;padding-top:var(--st)}
+
+/* TOPBAR */
+.tb{display:flex;align-items:center;justify-content:space-between;padding:12px 18px 8px;border-bottom:1px solid var(--b);background:var(--bg);flex-shrink:0}
+.tb-logo{font-family:'Playfair Display',serif;font-size:19px;color:var(--gold);font-weight:700;letter-spacing:-.01em}
+.tb-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.08em;margin-top:1px}
+.tb-right{display:flex;gap:10px;align-items:center}
+.tb-btn{font-size:19px;cursor:pointer;padding:4px;transition:.15s;background:none;border:none;color:var(--text)}
+.tb-btn:active{transform:scale(.82)}
+
+/* PAGES */
+.pages{flex:1;overflow:hidden;position:relative}
+.pg{position:absolute;inset:0;overflow-y:auto;padding:16px 16px 90px;display:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.pg.active{display:block}
+
+/* BOTTOM NAV */
+.bnav{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--b);background:var(--bg);padding-bottom:var(--sb);flex-shrink:0}
+.nb{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 6px;cursor:pointer;transition:.15s;border:none;background:none;color:var(--muted)}
+.nb .ico{font-size:20px;line-height:1}
+.nb .lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.04em;text-transform:uppercase}
+.nb.active{color:var(--gold)}
+
+/* TYPOGRAPHY */
+.pg-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:400;margin-bottom:2px;line-height:1.1}
+.pg-title em{color:var(--gold);font-style:normal}
+.pg-sub{font-size:13px;color:var(--muted);font-style:italic;margin-bottom:16px}
+.sec{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.sec::after{content:'';flex:1;height:1px;background:var(--b)}
+
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--b);border-radius:14px;padding:14px;margin-bottom:10px}
+
+/* STATS GRID */
+.sg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.sg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.sg4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:12px}
+.sb{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:12px 8px;text-align:center}
+.sn{font-family:'Playfair Display',serif;font-size:26px;color:var(--gold);line-height:1}
+.sl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.07em;color:var(--muted);margin-top:3px;text-transform:uppercase}
+
+/* ── ENERGY TRACKER ── */
+.energy-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.en-card{background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:12px;cursor:pointer;transition:.2s;position:relative}
+.en-card:active{transform:scale(.97)}
+.en-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.en-val{font-family:'Playfair Display',serif;font-size:32px;color:var(--gold);line-height:1}
+.en-emoji{font-size:24px;margin-bottom:4px}
+.en-desc{font-size:12px;color:var(--muted);font-style:italic;margin-top:2px}
+.en-bar{height:4px;background:var(--b);border-radius:2px;margin-top:8px;overflow:hidden}
+.en-bar-fill{height:100%;border-radius:2px;transition:.4s}
+
+/* ── COMPACT HABITS ── */
+.habit-compact{background:var(--s1);border:1px solid var(--b);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.hc-header{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer}
+.hc-emoji{font-size:18px;flex-shrink:0}
+.hc-info{flex:1;min-width:0}
+.hc-name{font-size:14px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hc-freq{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:1px}
+.hc-streak{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);background:rgba(200,169,110,.1);padding:2px 7px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+.hc-week{display:flex;gap:4px;padding:0 12px 10px;align-items:center}
+.hc-week.hidden{display:none}
+.dc{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.dc-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted)}
+.dc-dot{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:13px;transition:.18s;background:transparent}
+.dc-dot.done{background:var(--teal);border-color:var(--teal);color:#0e0e0e}
+.dc-dot.today-r{border-color:var(--gold)}
+.dc-dot.done.today-r{border-color:var(--teal)}
+.hc-month{display:flex;gap:2px;flex-wrap:wrap;padding:0 12px 10px}
+.hc-month.hidden{display:none}
+.md{width:10px;height:10px;border-radius:2px;background:var(--b);flex-shrink:0}
+.md.done{background:var(--teal)}
+.md.today{outline:1.5px solid var(--gold);outline-offset:1px}
+.hc-actions{display:flex;gap:0;border-top:1px solid var(--b)}
+.hc-actions.hidden{display:none}
+.ha{flex:1;padding:8px;border:none;background:none;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;transition:.15s;border-right:1px solid var(--b)}
+.ha:last-child{border-right:none}
+.ha:active{background:var(--s2)}
+.ha.del{color:var(--red)}
+
+/* ── WEEKLY SUMMARY ── */
+.wsummary{background:linear-gradient(135deg,rgba(200,169,110,.08),rgba(126,184,164,.06));border:1px solid rgba(200,169,110,.2);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.ws-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.ws-bars{display:flex;gap:4px;align-items:flex-end;height:32px}
+.ws-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.ws-bar{width:100%;border-radius:3px 3px 0 0;background:var(--b);transition:.4s;min-height:2px}
+.ws-day-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted)}
+
+/* ── ENERGY LOG HISTORY ── */
+.en-history{display:flex;flex-direction:column;gap:6px}
+.enh-row{display:flex;align-items:center;gap:10px;background:var(--s2);border-radius:10px;padding:10px 12px}
+.enh-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);min-width:34px}
+.enh-dots{display:flex;gap:4px;flex:1}
+.enh-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:500}
+
+/* ── DAILY LOG ── */
+.dl-energy{text-align:center;padding:8px 0 4px}
+.dl-en-num{font-family:'Playfair Display',serif;font-size:52px;color:var(--gold);line-height:1}
+.dl-en-desc{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:3px;background:linear-gradient(90deg,var(--teal),var(--gold));outline:none;margin:10px 0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--gold);border:2.5px solid var(--bg);box-shadow:0 0 0 2px var(--gold);cursor:pointer}
+.log-field{margin-bottom:10px}
+.lf-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:5px;display:block}
+.fi{width:100%;background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'Crimson Pro',serif;font-size:15px;outline:none;transition:.2s;-webkit-appearance:none;resize:none;min-height:60px}
+.fi:focus{border-color:var(--gold)}
+.fi::placeholder{color:var(--dim);font-style:italic}
+.fi-single{min-height:unset;height:42px;resize:none}
+select.fi{cursor:pointer;height:42px;min-height:unset}
+
+/* ── LOG ENTRY LIST ── */
+.le{background:var(--s2);border-radius:10px;padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:.15s;border-left:3px solid var(--b)}
+.le:active{opacity:.7}
+.le.e-high{border-left-color:var(--gold)}
+.le.e-mid{border-left-color:var(--teal)}
+.le.e-low{border-left-color:var(--muted)}
+.le-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.le-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.le-en{font-family:'Playfair Display',serif;font-size:20px;color:var(--gold)}
+.le-preview{font-size:13px;font-style:italic;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── WINS ── */
+.win-item{background:var(--s2);border-radius:10px;padding:12px 14px;margin-bottom:8px;border-left:3px solid var(--gold);cursor:pointer;transition:.15s}
+.win-item:active{opacity:.7}
+.win-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.win-size{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:4px}
+.ws-big{background:rgba(200,169,110,.15);color:var(--gold)}
+.ws-med{background:rgba(126,184,164,.12);color:var(--teal)}
+.ws-small{background:rgba(107,159,212,.12);color:var(--blue)}
+.win-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-left:auto}
+.win-text{font-size:15px;font-style:italic}
+
+/* ── GOALS ── */
+.goal-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--b)}
+.goal-item:last-child{border-bottom:none}
+.goal-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.goal-text{flex:1;font-size:14px;font-style:italic;min-width:0}
+.goal-metric{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;margin-right:4px}
+.gpbar{width:50px;height:4px;background:var(--b);border-radius:2px;overflow:hidden;flex-shrink:0}
+.gpfill{height:100%;border-radius:2px}
+.gpct{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);min-width:26px;text-align:right}
+
+/* ── MONEY ── */
+.money-header{display:flex;align-items:baseline;gap:8px;margin-bottom:14px}
+.money-total{font-family:'Playfair Display',serif;font-size:38px;color:var(--teal);line-height:1}
+.money-currency{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--muted)}
+.money-growth{font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border-radius:5px;margin-left:auto}
+.mg-pos{background:rgba(126,184,164,.12);color:var(--teal)}
+.mg-neg{background:rgba(224,112,112,.12);color:var(--red)}
+.tx-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--b)}
+.tx-item:last-child{border-bottom:none}
+.tx-emoji{font-size:18px;flex-shrink:0}
+.tx-info{flex:1;min-width:0}
+.tx-name{font-size:14px;font-style:italic}
+.tx-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.tx-amount{font-family:'JetBrains Mono',monospace;font-size:13px;white-space:nowrap}
+.tx-in{color:var(--teal)}
+.tx-out{color:var(--red)}
+
+/* ── LIFE ── */
+.life-item{background:var(--s2);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:.15s;border-left:3px solid var(--purple)}
+.life-item:active{opacity:.7}
+.li-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.li-cat{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:rgba(176,122,176,.12);color:var(--purple)}
+.li-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-left:auto}
+.li-text{font-size:15px;font-style:italic}
+
+/* ── CONTENT ── */
+.ktabs{display:flex;gap:3px;background:var(--s2);border-radius:10px;padding:3px;margin-bottom:12px}
+.kt{flex:1;padding:7px 3px;border-radius:7px;border:none;background:transparent;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:.2s}
+.kt.active{background:var(--s1);color:var(--text)}
+.kcol{display:none}
+.kcol.active{display:block}
+.kc{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:11px 12px;margin-bottom:7px;cursor:pointer;transition:.15s}
+.kc:active{opacity:.7;transform:scale(.98)}
+.kc-text{font-size:13px;font-style:italic}
+.kc-meta{display:flex;align-items:center;gap:6px;margin-top:7px}
+.k-tag{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 6px;border-radius:3px;letter-spacing:.05em;text-transform:uppercase}
+.tg{background:rgba(126,184,164,.15);color:var(--teal)}
+.ig{background:rgba(176,122,176,.15);color:var(--purple)}
+.idea{background:rgba(200,169,110,.12);color:var(--gold)}
+.kc-btn{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);background:none;border:none;cursor:pointer;padding:2px 4px}
+.kc-btn.posted{color:var(--teal)}
+
+/* ── ACHIEVEMENTS ── */
+.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.ai{background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:12px 8px;text-align:center;transition:.2s}
+.ai.un{border-color:var(--gold);background:rgba(200,169,110,.05)}
+.ai-ico{font-size:26px;margin-bottom:5px}
+.ai-name{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;line-height:1.4}
+.ai.un .ai-name{color:var(--gold)}
+.ai-locked{filter:grayscale(1) opacity(.2)}
+.ai-date{font-size:9px;color:var(--muted);font-style:italic;margin-top:2px}
+
+/* ── MODAL ── */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:.22s}
+.mo.open{opacity:1;pointer-events:all}
+.mi{width:100%;max-width:520px;background:var(--s1);border-radius:18px 18px 0 0;padding:20px 18px calc(var(--sb) + 20px);transform:translateY(100%);transition:.28s cubic-bezier(.4,0,.2,1);max-height:92vh;overflow-y:auto}
+.mo.open .mi{transform:translateY(0)}
+.mh{width:36px;height:3px;background:var(--b);border-radius:2px;margin:0 auto 16px}
+.mt{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:14px;color:var(--gold)}
+.fg{margin-bottom:10px}
+.fl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;display:block}
+.ep{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.eo{width:36px;height:36px;border-radius:9px;border:2px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;background:var(--s2);transition:.13s}
+.eo.sel{border-color:var(--gold);background:rgba(200,169,110,.1)}
+
+/* BUTTONS */
+.bp{width:100%;padding:13px;border-radius:12px;border:none;background:var(--gold);color:#0e0e0e;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;transition:.18s;margin-top:8px}
+.bp:active{transform:scale(.97);background:#d4b67e}
+.bs{width:100%;padding:11px;border-radius:12px;border:1px solid var(--b);background:transparent;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;transition:.18s;margin-top:6px}
+.bs:active{background:var(--s2)}
+.add-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:12px;border-radius:12px;border:2px dashed var(--b);background:transparent;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;transition:.18s;margin-bottom:8px}
+.add-btn:active{border-color:var(--gold);color:var(--gold)}
+
+/* TOAST */
+.toast{position:fixed;top:calc(var(--st) + 55px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--gold);color:#0e0e0e;padding:9px 18px;border-radius:18px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.05em;opacity:0;transition:.25s;z-index:300;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* DECISION */
+.dcard{background:var(--s2);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:.15s}
+.dcard:active{opacity:.7}
+.dq{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:3px}
+.da{font-size:13px;font-style:italic}
+.dstatus{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border-radius:4px;margin-top:7px;display:inline-block}
+.dp{background:rgba(200,169,110,.12);color:var(--gold)}
+.dd{background:rgba(126,184,164,.12);color:var(--teal)}
+
+/* HEATMAP */
+.hm{display:flex;gap:2px;flex-wrap:wrap}
+.hmc{width:11px;height:11px;border-radius:2px;background:var(--b)}
+.hmc.l1{background:rgba(126,184,164,.3)}
+.hmc.l2{background:rgba(126,184,164,.55)}
+.hmc.l3{background:rgba(126,184,164,.8)}
+.hmc.l4{background:var(--teal)}
+
+/* EMPTY */
+.empty{text-align:center;padding:32px 16px;color:var(--muted);font-style:italic;font-size:13px}
+.empty .ei{font-size:36px;display:block;margin-bottom:8px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:2px}
+::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+
+/* ANIMATIONS */
+@keyframes pop{0%{transform:scale(.75)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.pop{animation:pop .22s ease}
+@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fadeup{animation:fadeup .25s ease}
+
+/* TOGGLE */
+.tgl{width:42px;height:22px;border-radius:11px;background:var(--b);position:relative;cursor:pointer;transition:.25s;border:none;flex-shrink:0}
+.tgl.on{background:var(--teal)}
+.tgl::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.25s}
+.tgl.on::after{left:22px}
+
+/* NO CHAOS MORNING highlight */
+.ncm-card{background:linear-gradient(135deg,rgba(200,169,110,.1),rgba(107,159,212,.06));border:1px solid rgba(200,169,110,.25);border-radius:14px;padding:14px;margin-bottom:10px}
+.ncm-timer{font-family:'Playfair Display',serif;font-size:36px;color:var(--gold);text-align:center;margin:8px 0 2px}
+.ncm-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-align:center;letter-spacing:.1em;text-transform:uppercase}
+
+/* SETTINGS */
+.notif-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--b)}
+.notif-row:last-child{border-bottom:none}
+.notif-info{flex:1}
+.notif-name{font-size:14px;font-style:italic}
+.notif-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:1px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TOPBAR -->
+<div class="tb">
+  <div>
+    <div class="tb-logo">Personal OS</div>
+    <div class="tb-date" id="tb-date"></div>
+  </div>
+  <div class="tb-right">
+    <button class="tb-btn" onclick="gotoPage('decisions')" title="Decisions">🧠</button>
+    <button class="tb-btn" onclick="gotoPage('settings')" title="Settings">⚙️</button>
+  </div>
+</div>
+
+<!-- PAGES -->
+<div class="pages">
+
+<!-- ═══ TODAY ═══ -->
+<div class="pg active" id="pg-today">
+  <div class="pg-title">Сегодня <em>·</em></div>
+  <div class="pg-sub" id="today-greet"></div>
+
+  <!-- NO CHAOS MORNING -->
+  <div class="ncm-card" id="ncm-block">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:20px">🌅</span>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)">No Chaos Morning</div>
+        <div style="font-size:12px;color:var(--muted);font-style:italic">Первый час без reels и Telegram</div>
+      </div>
+      <div id="ncm-status" style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal)"></div>
+    </div>
+    <div class="ncm-timer" id="ncm-timer">60:00</div>
+    <div class="ncm-sub" id="ncm-sub">до конца тихого часа</div>
+    <div style="display:flex;gap:6px;margin-top:10px">
+      <button onclick="ncmStart()" id="ncm-start-btn" class="bp" style="flex:1;margin-top:0;padding:10px">▶ Начать</button>
+      <button onclick="ncmDone()" id="ncm-done-btn" class="bs" style="flex:1;margin-top:0;padding:10px;display:none">✓ Готово</button>
+    </div>
+  </div>
+
+  <!-- QUICK ENERGY CHECK -->
+  <div class="sec">Состояние сейчас</div>
+  <div class="energy-grid">
+    <div class="en-card" onclick="openEnergyModal('energy')">
+      <div class="en-label">⚡ Энергия</div>
+      <div class="en-val" id="q-energy">—</div>
+      <div class="en-desc" id="q-energy-desc">нажми чтобы отметить</div>
+      <div class="en-bar"><div class="en-bar-fill" id="q-energy-bar" style="background:var(--gold);width:0%"></div></div>
+    </div>
+    <div class="en-card" onclick="openEnergyModal('mood')">
+      <div class="en-label">😊 Настроение</div>
+      <div class="en-val" id="q-mood">—</div>
+      <div class="en-desc" id="q-mood-desc">нажми чтобы отметить</div>
+      <div class="en-bar"><div class="en-bar-fill" id="q-mood-bar" style="background:var(--purple);width:0%"></div></div>
+    </div>
+    <div class="en-card" onclick="openEnergyModal('sleep')">
+      <div class="en-label">💤 Сон (ч)</div>
+      <div class="en-val" id="q-sleep">—</div>
+      <div class="en-desc" id="q-sleep-desc">нажми чтобы отметить</div>
+      <div class="en-bar"><div class="en-bar-fill" id="q-sleep-bar" style="background:var(--blue);width:0%"></div></div>
+    </div>
+    <div class="en-card" onclick="openEnergyModal('stress')">
+      <div class="en-label">🌡 Стресс</div>
+      <div class="en-val" id="q-stress">—</div>
+      <div class="en-desc" id="q-stress-desc">нажми чтобы отметить</div>
+      <div class="en-bar"><div class="en-bar-fill" id="q-stress-bar" style="background:var(--red);width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- TODAY STATS -->
+  <div class="sg3">
+    <div class="sb"><div class="sn" id="ts-streak">0</div><div class="sl">🔥 Стрик</div></div>
+    <div class="sb"><div class="sn" id="ts-done">0/0</div><div class="sl">✅ Привычки</div></div>
+    <div class="sb"><div class="sn" id="ts-week">0%</div><div class="sl">📊 Неделя</div></div>
+  </div>
+
+  <!-- TODAY HABITS COMPACT -->
+  <div class="sec">Привычки на сегодня</div>
+  <div id="today-habits"></div>
+
+  <!-- FOCUS -->
+  <div class="sec">Фокус дня</div>
+  <div class="card">
+    <textarea class="fi fi-single" id="today-focus" placeholder="Одна вещь, которая сделает день успешным..." style="height:50px"></textarea>
+  </div>
+  <button class="bp" style="margin-bottom:12px" onclick="saveTodayData()">💾 Сохранить</button>
+</div>
+
+<!-- ═══ HABITS ═══ -->
+<div class="pg" id="pg-habits">
+  <div class="pg-title"><em>🔥</em> Habits</div>
+  <div class="pg-sub">Отмечай каждый день</div>
+
+  <!-- WEEKLY SUMMARY -->
+  <div class="wsummary" id="week-summary"></div>
+
+  <div class="sg3">
+    <div class="sb"><div class="sn" id="hs-total">0</div><div class="sl">Привычек</div></div>
+    <div class="sb"><div class="sn" id="hs-best">0</div><div class="sl">🏆 Рекорд</div></div>
+    <div class="sb"><div class="sn" id="hs-month">0%</div><div class="sl">📅 Месяц</div></div>
+  </div>
+
+  <div id="habits-list"></div>
+  <button class="add-btn" onclick="openAddHabit()">＋ Добавить привычку</button>
+
+  <div class="sec">Активность за год</div>
+  <div class="card"><div class="hm" id="heatmap"></div>
+    <div style="display:flex;align-items:center;gap:5px;margin-top:10px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted)">меньше</span>
+      <div class="hmc"></div><div class="hmc l1"></div><div class="hmc l2"></div><div class="hmc l3"></div><div class="hmc l4"></div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted)">больше</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ENERGY ═══ -->
+<div class="pg" id="pg-energy">
+  <div class="pg-title"><em>⚡</em> Energy</div>
+  <div class="pg-sub">Паттерны состояния за месяцы</div>
+
+  <div class="sg4">
+    <div class="sb"><div class="sn" id="es-energy" style="font-size:20px">—</div><div class="sl">⚡ Энергия</div></div>
+    <div class="sb"><div class="sn" id="es-mood" style="font-size:20px">—</div><div class="sl">😊 Настр.</div></div>
+    <div class="sb"><div class="sn" id="es-sleep" style="font-size:20px">—</div><div class="sl">💤 Сон</div></div>
+    <div class="sb"><div class="sn" id="es-stress" style="font-size:20px">—</div><div class="sl">🌡 Стресс</div></div>
+  </div>
+
+  <div class="sec">История по дням</div>
+  <div id="energy-history"></div>
+</div>
+
+<!-- ═══ LOG ═══ -->
+<div class="pg" id="pg-log">
+  <div class="pg-title"><em>📓</em> Daily Log</div>
+  <div class="pg-sub">Честность важнее красоты</div>
+
+  <div class="sec">Запись за сегодня</div>
+  <div class="card">
+    <div class="dl-energy">
+      <div class="dl-en-num" id="dl-en-num">7</div>
+      <div class="dl-en-desc" id="dl-en-desc">хорошая энергия</div>
+    </div>
+    <input type="range" min="1" max="10" value="7" id="dl-slider" oninput="updateDLEnergy(this.value)" style="margin-bottom:14px">
+
+    <div class="log-field"><label class="lf-label">✅ Что сделал</label>
+      <textarea class="fi" id="dl-done" placeholder="— сделал X&#10;— завершил Y"></textarea></div>
+    <div class="log-field"><label class="lf-label">❌ Что не сделал</label>
+      <textarea class="fi" id="dl-notdone" placeholder="— не успел X"></textarea></div>
+    <div class="log-field"><label class="lf-label">⚡ Что дало энергию</label>
+      <textarea class="fi" id="dl-gave" placeholder="— встреча с X&#10;— тренировка"></textarea></div>
+    <div class="log-field"><label class="lf-label">🕳 Что забрало энергию</label>
+      <textarea class="fi" id="dl-took" placeholder="— долгое совещание&#10;— соцсети"></textarea></div>
+    <div class="log-field"><label class="lf-label">💡 Что понял</label>
+      <textarea class="fi" id="dl-insight" placeholder="— осознал что..."></textarea></div>
+    <div class="log-field"><label class="lf-label">🏆 Главный вывод</label>
+      <textarea class="fi" id="dl-conclusion" placeholder="Одна ключевая мысль..." style="min-height:54px"></textarea></div>
+    <button class="bp" onclick="saveLog()">💾 Сохранить запись</button>
+  </div>
+
+  <div class="sec">История</div>
+  <div id="log-history"></div>
+</div>
+
+<!-- ═══ WINS ═══ -->
+<div class="pg" id="pg-wins">
+  <div class="pg-title"><em>🏆</em> Wins</div>
+  <div class="pg-sub">Фиксируй даже маленькие победы</div>
+
+  <div class="sg3">
+    <div class="sb"><div class="sn" id="ws-big">0</div><div class="sl">🔥 Большие</div></div>
+    <div class="sb"><div class="sn" id="ws-med">0</div><div class="sl">⚡ Средние</div></div>
+    <div class="sb"><div class="sn" id="ws-small">0</div><div class="sl">✨ Малые</div></div>
+  </div>
+
+  <div class="sec">Достижения</div>
+
+  <div class="sec" id="ach-sec-label">🏅 Авто-достижения</div>
+  <div class="ach-grid" id="ach-mini"></div>
+
+  <div class="sec">Личные победы</div>
+  <div id="wins-list"></div>
+  <button class="add-btn" onclick="openAddWin()">＋ Записать победу</button>
+</div>
+
+<!-- ═══ GOALS ═══ -->
+<div class="pg" id="pg-goals">
+  <div class="pg-title"><em>🎯</em> Goals</div>
+  <div class="pg-sub">Измеримо и конкретно</div>
+  <div id="goals-list"></div>
+  <button class="add-btn" onclick="openAddGoal()">＋ Добавить цель</button>
+</div>
+
+<!-- ═══ LIFE ═══ -->
+<div class="pg" id="pg-life">
+  <div class="pg-title"><em>🌍</em> Life</div>
+  <div class="pg-sub">Новые места, люди, впечатления</div>
+
+  <div class="sg3">
+    <div class="sb"><div class="sn" id="ls-places">0</div><div class="sl">📍 Места</div></div>
+    <div class="sb"><div class="sn" id="ls-people">0</div><div class="sl">🤝 Люди</div></div>
+    <div class="sb"><div class="sn" id="ls-events">0</div><div class="sl">🎉 События</div></div>
+  </div>
+
+  <div id="life-list"></div>
+  <button class="add-btn" onclick="openAddLife()">＋ Добавить момент</button>
+</div>
+
+<!-- ═══ MONEY ═══ -->
+<div class="pg" id="pg-money">
+  <div class="pg-title"><em>💰</em> Money</div>
+  <div class="pg-sub">Не бухгалтерия — рост</div>
+
+  <div class="card">
+    <div class="money-header">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">Доход этого месяца</div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <div class="money-total" id="m-income">0</div>
+          <div class="money-currency">₽</div>
+        </div>
+      </div>
+      <div class="money-growth" id="m-growth" style="margin-left:auto;display:none"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="background:var(--s2);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Расходы</div>
+        <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--red)" id="m-expenses">0</div>
+      </div>
+      <div style="background:var(--s2);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Остаток</div>
+        <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--teal)" id="m-balance">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">Транзакции</div>
+  <div id="tx-list"></div>
+  <button class="add-btn" onclick="openAddTx()">＋ Добавить транзакцию</button>
+</div>
+
+<!-- ═══ CONTENT ═══ -->
+<div class="pg" id="pg-content">
+  <div class="pg-title"><em>✍️</em> Content</div>
+  <div class="pg-sub">Telegram · Instagram · идеи</div>
+  <div class="sg3">
+    <div class="sb"><div class="sn" id="cc-ideas">0</div><div class="sl">💡 Идеи</div></div>
+    <div class="sb"><div class="sn" id="cc-wip">0</div><div class="sl">✏️ В работе</div></div>
+    <div class="sb"><div class="sn" id="cc-posted">0</div><div class="sl">✅ Вышло</div></div>
+  </div>
+  <div class="ktabs">
+    <button class="kt active" onclick="switchK('ideas',this)">💡 Идеи</button>
+    <button class="kt" onclick="switchK('wip',this)">✏️ В работе</button>
+    <button class="kt" onclick="switchK('posted',this)">✅ Posted</button>
+  </div>
+  <div class="kcol active" id="kc-ideas"><div id="k-ideas"></div></div>
+  <div class="kcol" id="kc-wip"><div id="k-wip"></div></div>
+  <div class="kcol" id="kc-posted"><div id="k-posted"></div></div>
+  <button class="add-btn" onclick="openAddContent()">＋ Добавить идею</button>
+</div>
+
+<!-- ═══ DECISIONS ═══ -->
+<div class="pg" id="pg-decisions">
+  <div class="pg-title"><em>🧠</em> Decisions</div>
+  <div class="pg-sub">Прокачивает мышление</div>
+  <div id="decisions-list"></div>
+  <button class="add-btn" onclick="openAddDecision()">＋ Записать решение</button>
+</div>
+
+<!-- ═══ SETTINGS ═══ -->
+<div class="pg" id="pg-settings">
+  <div class="pg-title"><em>⚙️</em> Настройки</div>
+  <div class="pg-sub"></div>
+
+  <div class="sec">Уведомления</div>
+  <div class="card">
+    <div class="notif-row">
+      <div class="notif-info"><div class="notif-name">🌙 Daily Log вечером</div><div class="notif-time">21:00</div></div>
+      <button class="tgl" id="tgl-log" onclick="toggleN('log')"></button>
+    </div>
+    <div class="notif-row">
+      <div class="notif-info"><div class="notif-name">☀️ Привычки утром</div><div class="notif-time">09:00</div></div>
+      <button class="tgl" id="tgl-morning" onclick="toggleN('morning')"></button>
+    </div>
+    <div class="notif-row">
+      <div class="notif-info"><div class="notif-name">⚡ Energy check-in</div><div class="notif-time">12:00</div></div>
+      <button class="tgl" id="tgl-energy" onclick="toggleN('energy')"></button>
+    </div>
+  </div>
+  <button class="bp" onclick="reqNotif()">🔔 Разрешить уведомления</button>
+
+  <div class="sec">Данные</div>
+  <div class="card">
+    <button class="bs" style="margin-top:0" onclick="exportData()">📤 Экспортировать</button>
+    <button class="bs" style="color:var(--red);border-color:rgba(224,112,112,.3);margin-top:6px" onclick="confirmReset()">🗑 Сбросить всё</button>
+  </div>
+
+  <div class="sec">Установка</div>
+  <div class="card" style="border-color:rgba(200,169,110,.25);background:rgba(200,169,110,.04)">
+    <div style="font-family:'Playfair Display',serif;font-size:17px;color:var(--gold);margin-bottom:10px">📲 На экран домой</div>
+    <div style="display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--muted)">
+      <div>1️⃣ Сохрани HTML в <strong style="color:var(--text)">Файлы → iCloud Drive</strong></div>
+      <div>2️⃣ Открой → удержи → <strong style="color:var(--text)">Открыть в Safari</strong></div>
+      <div>3️⃣ Safari → <strong style="color:var(--text)">Поделиться ↑ → На экран домой</strong></div>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center;margin-top:8px">
+    <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--gold);margin-bottom:3px">Personal OS v2</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em">Локальное хранение · Офлайн</div>
+  </div>
+</div>
+
+</div><!-- /pages -->
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="nb active" onclick="gotoPage('today')"><span class="ico">☀️</span><span class="lbl">Today</span></button>
+  <button class="nb" onclick="gotoPage('habits')"><span class="ico">🔥</span><span class="lbl">Habits</span></button>
+  <button class="nb" onclick="gotoPage('energy')"><span class="ico">⚡</span><span class="lbl">Energy</span></button>
+  <button class="nb" onclick="gotoPage('log')"><span class="ico">📓</span><span class="lbl">Log</span></button>
+  <button class="nb" onclick="gotoPage('wins')"><span class="ico">🏆</span><span class="lbl">Wins</span></button>
+  <button class="nb" onclick="gotoPage('goals')"><span class="ico">🎯</span><span class="lbl">Goals</span></button>
+  <button class="nb" onclick="gotoPage('life')"><span class="ico">🌍</span><span class="lbl">Life</span></button>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="mo" id="modal" onclick="closeMOBg(event)">
+  <div class="mi" id="modal-inner"><div class="mh"></div><div id="modal-body"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// DB
+// ═══════════════════════════════════════
+const DB_KEY = 'pos_v2';
+function loadDB(){try{return JSON.parse(localStorage.getItem(DB_KEY))||defDB()}catch{return defDB()}}
+function save(){localStorage.setItem(DB_KEY,JSON.stringify(db))}
+
+function defDB(){return{
+  habits:[
+    {id:uid(),emoji:'🌅',name:'No Chaos Morning',freq:'daily',color:'gold',logs:{}},
+    {id:uid(),emoji:'💤',name:'Сон до 23:00',freq:'daily',color:'teal',logs:{}},
+    {id:uid(),emoji:'🏋️',name:'Тренировка',freq:'3week',color:'gold',logs:{}},
+    {id:uid(),emoji:'📓',name:'Daily Log',freq:'daily',color:'teal',logs:{}},
+    {id:uid(),emoji:'📚',name:'Чтение 20 мин',freq:'daily',color:'teal',logs:{}},
+  ],
+  energyLogs:{},
+  logs:[],
+  wins:[],
+  goals:[
+    {id:uid(),cat:'💚 Здоровье',text:'30 дней Daily Log подряд',metric:'0/30',pct:0,color:'teal'},
+    {id:uid(),cat:'💚 Здоровье',text:'3 тренировки в неделю — 8 недель',metric:'0/8 нед',pct:0,color:'teal'},
+    {id:uid(),cat:'💼 Карьера',text:'Доход +30% к декабрю',metric:'+0%',pct:0,color:'gold'},
+    {id:uid(),cat:'📱 Контент',text:'2 поста в неделю — 12 недель',metric:'0/12 нед',pct:0,color:'gold'},
+    {id:uid(),cat:'📱 Контент',text:'1 видео в неделю — 8 недель',metric:'0/8 нед',pct:0,color:'gold'},
+    {id:uid(),cat:'🌱 Личность',text:'No Chaos Morning — 30 дней',metric:'0/30',pct:0,color:'purple'},
+  ],
+  content:[
+    {id:uid(),text:'Пост: «Почему я перестал читать мотивационные книги»',status:'ideas',tag:'tg'},
+    {id:uid(),text:'Видео: «День из жизни с Personal OS»',status:'ideas',tag:'ig'},
+    {id:uid(),text:'Как я выстроил систему за 30 дней',status:'wip',tag:'tg'},
+  ],
+  life:[
+    {id:uid(),cat:'Место',text:'Хочу попробовать: новый ресторан в центре',date:today(),done:false},
+  ],
+  money:{transactions:[],goalIncome:0},
+  decisions:[
+    {id:uid(),date:'2025-04-01',decision:'Начать вести Personal OS',why:'Хочу порядок и рост',expect:'Осознанность',result:'Стал замечать паттерны',done:true},
+  ],
+  notifs:{log:false,morning:false,energy:false},
+  achievements:{},
+  ncm:{active:false,startedAt:null,done:false},
+  todayFocus:'',
+}}
+
+let db = loadDB();
+function uid(){return Math.random().toString(36).slice(2,10)}
+function today(){return new Date().toISOString().slice(0,10)}
+function dateKey(d){return d.toISOString().slice(0,10)}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+const PAGE_ORDER = ['today','habits','energy','log','wins','goals','life'];
+
+function gotoPage(name){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  const pg = document.getElementById('pg-'+name);
+  if(pg) pg.classList.add('active');
+  const idx = PAGE_ORDER.indexOf(name);
+  const nbs = document.querySelectorAll('.nb');
+  if(idx>=0 && idx<nbs.length) nbs[idx].classList.add('active');
+  renderPage(name);
+  // scroll to top
+  if(pg) pg.scrollTop = 0;
+}
+
+function renderPage(n){
+  switch(n){
+    case 'today': renderToday(); break;
+    case 'habits': renderHabits(); break;
+    case 'energy': renderEnergy(); break;
+    case 'log': renderLog(); break;
+    case 'wins': renderWins(); break;
+    case 'goals': renderGoals(); break;
+    case 'life': renderLife(); break;
+    case 'content': renderContent(); break;
+    case 'decisions': renderDecisions(); break;
+    case 'settings': renderSettings(); break;
+    case 'money': renderMoney(); break;
+  }
+}
+
+// ═══════════════════════════════════════
+// TODAY
+// ═══════════════════════════════════════
+function renderToday(){
+  const h = new Date().getHours();
+  document.getElementById('today-greet').textContent =
+    h<5?'Ночной сеанс 🌙':h<12?'Доброе утро! ☀️':h<17?'Добрый день! 🌤':'Добрый вечер! 🌙';
+
+  updateNCMDisplay();
+
+  // energy quick display
+  const el = db.energyLogs[today()]||{};
+  const fields = [
+    {k:'energy',id:'q-energy',bar:'q-energy-bar',color:'var(--gold)',max:10,suffix:''},
+    {k:'mood',id:'q-mood',bar:'q-mood-bar',color:'var(--purple)',max:10,suffix:''},
+    {k:'sleep',id:'q-sleep',bar:'q-sleep-bar',color:'var(--blue)',max:12,suffix:'ч'},
+    {k:'stress',id:'q-stress',bar:'q-stress-bar',color:'var(--red)',max:10,suffix:''},
+  ];
+  fields.forEach(f=>{
+    const v = el[f.k];
+    const el2 = document.getElementById(f.id);
+    const bar = document.getElementById(f.bar);
+    if(v!==undefined){
+      el2.textContent = v+f.suffix;
+      bar.style.width = (v/f.max*100)+'%';
+      bar.style.background = f.color;
+      document.getElementById(f.id+'-desc').textContent = energyDesc(f.k,v);
+    } else {
+      el2.textContent = '—';
+      bar.style.width='0%';
+      document.getElementById(f.id+'-desc').textContent = 'нажми чтобы отметить';
+    }
+  });
+
+  // stats
+  const todayStr = today();
+  const doneCnt = db.habits.filter(hb=>hb.logs[todayStr]).length;
+  const maxStreak = db.habits.length>0 ? Math.max(...db.habits.map(calcStreak)) : 0;
+  document.getElementById('ts-streak').textContent = maxStreak;
+  document.getElementById('ts-done').textContent = doneCnt+'/'+db.habits.length;
+  document.getElementById('ts-week').textContent = calcWeekPct()+'%';
+
+  // today habits - compact single toggle
+  const el3 = document.getElementById('today-habits');
+  if(db.habits.length===0){el3.innerHTML='<div class="empty"><span class="ei">🌱</span>Добавь привычки во вкладке Habits</div>';return}
+  el3.innerHTML = db.habits.map(hb=>{
+    const done = !!hb.logs[todayStr];
+    const streak = calcStreak(hb);
+    return `<div class="habit-compact" style="${done?'border-color:var(--teal);opacity:.8':''}">
+      <div class="hc-header">
+        <span class="hc-emoji">${hb.emoji}</span>
+        <div class="hc-info">
+          <div class="hc-name" style="${done?'text-decoration:line-through;color:var(--muted)':''}">${hb.name}</div>
+          <div class="hc-freq">${freqLbl(hb.freq)}</div>
+        </div>
+        <div class="hc-streak">${streak>0?'🔥'+streak:'—'}</div>
+      </div>
+      <div style="padding:0 12px 12px">
+        <button onclick="quickToggle('${hb.id}')" style="
+          width:100%;padding:10px;border-radius:9px;
+          border:1.5px solid ${done?'var(--teal)':'var(--b)'};
+          background:${done?'rgba(126,184,164,.15)':'transparent'};
+          color:${done?'var(--teal)':'var(--muted)'};
+          cursor:pointer;font-family:'JetBrains Mono',monospace;
+          font-size:11px;letter-spacing:.06em;text-transform:uppercase;transition:.15s;
+        ">${done?'✓ Выполнено':'Отметить'}</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('today-focus').value = db.todayFocus||'';
+}
+
+function quickToggle(hid){
+  const hb = db.habits.find(x=>x.id===hid);
+  if(!hb)return;
+  const t = today();
+  if(hb.logs[t]) delete hb.logs[t];
+  else{hb.logs[t]=1;checkAch()}
+  save(); renderToday();
+  if(hb.logs[t]) showToast('✓ '+hb.name);
+}
+
+function saveTodayData(){
+  db.todayFocus = document.getElementById('today-focus').value;
+  save(); showToast('💾 Сохранено!');
+}
+
+// ═══════════════════════════════════════
+// NO CHAOS MORNING
+// ═══════════════════════════════════════
+let ncmInterval = null;
+
+function updateNCMDisplay(){
+  const h = new Date().getHours();
+  const block = document.getElementById('ncm-block');
+  // Show only in morning (5-13)
+  if(h<5||h>=13){block.style.display='none';return}
+  block.style.display='block';
+
+  const ncm = db.ncm;
+  const btn = document.getElementById('ncm-start-btn');
+  const doneBtn = document.getElementById('ncm-done-btn');
+  const status = document.getElementById('ncm-status');
+
+  if(ncm.done){
+    document.getElementById('ncm-timer').textContent='✓';
+    document.getElementById('ncm-sub').textContent='утро без хаоса — выполнено!';
+    status.textContent='✓';
+    btn.style.display='none'; doneBtn.style.display='none';
+    return;
+  }
+
+  if(ncm.active && ncm.startedAt){
+    const elapsed = Math.floor((Date.now()-ncm.startedAt)/1000);
+    const remaining = Math.max(0, 3600 - elapsed);
+    if(remaining===0){ncmDone();return}
+    const m = Math.floor(remaining/60), s = remaining%60;
+    document.getElementById('ncm-timer').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    document.getElementById('ncm-sub').textContent = 'тихий час идёт...';
+    status.textContent = '▶';
+    btn.style.display='none'; doneBtn.style.display='block';
+  } else {
+    document.getElementById('ncm-timer').textContent = '60:00';
+    document.getElementById('ncm-sub').textContent = 'первый час без reels и Telegram';
+    btn.style.display='block'; doneBtn.style.display='none';
+  }
+}
+
+function ncmStart(){
+  db.ncm = {active:true, startedAt:Date.now(), done:false};
+  save();
+  if(ncmInterval) clearInterval(ncmInterval);
+  ncmInterval = setInterval(()=>{
+    const elapsed = Math.floor((Date.now()-db.ncm.startedAt)/1000);
+    const remaining = Math.max(0,3600-elapsed);
+    const m = Math.floor(remaining/60), s=remaining%60;
+    const el = document.getElementById('ncm-timer');
+    if(el) el.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if(remaining===0){clearInterval(ncmInterval);ncmDone()}
+  },1000);
+  showToast('🌅 Тихий час начался!');
+  updateNCMDisplay();
+}
+
+function ncmDone(){
+  if(ncmInterval){clearInterval(ncmInterval);ncmInterval=null}
+  db.ncm.active=false; db.ncm.done=true;
+  // Mark NCM habit if exists
+  const ncmH = db.habits.find(h=>h.name.toLowerCase().includes('chaos')||h.name.toLowerCase().includes('morning'));
+  if(ncmH){ncmH.logs[today()]=1}
+  save(); updateNCMDisplay(); checkAch();
+  showToast('🏆 No Chaos Morning выполнен!');
+}
+
+// Reset NCM at midnight
+function resetNCMIfNeeded(){
+  const t = today();
+  if(db.ncm._date!==t){db.ncm={active:false,startedAt:null,done:false,_date:t};save()}
+}
+
+// ═══════════════════════════════════════
+// ENERGY MODAL
+// ═══════════════════════════════════════
+const enConfigs = {
+  energy:{label:'⚡ Энергия',max:10,color:'var(--gold)',descs:{1:'нет сил',3:'мало',5:'нормально',7:'хорошо',9:'отлично',10:'пик!'}},
+  mood:{label:'😊 Настроение',max:10,color:'var(--purple)',descs:{1:'плохо',3:'так себе',5:'нейтрально',7:'хорошо',9:'отлично',10:'🚀'}},
+  sleep:{label:'💤 Сон (часов)',max:12,color:'var(--blue)',descs:{4:'мало',6:'нормально',7:'хорошо',8:'идеально',10:'много'}},
+  stress:{label:'🌡 Стресс',max:10,color:'var(--red)',descs:{1:'спокойно',3:'чуть-чуть',5:'умеренно',7:'высокий',10:'перегруз'}},
+};
+
+function energyDesc(k,v){
+  const d = enConfigs[k]?.descs;
+  if(!d)return'';
+  const keys = Object.keys(d).map(Number).sort((a,b)=>a-b);
+  let res = '';
+  for(const kk of keys){if(v>=kk)res=d[kk]}
+  return res;
+}
+
+function openEnergyModal(key){
+  const cfg = enConfigs[key];
+  const cur = db.energyLogs[today()]?.[key];
+  const val = cur!==undefined?cur:Math.round(cfg.max/2);
+  openModal(`
+    <div class="mt">${cfg.label}</div>
+    <div style="text-align:center;margin-bottom:8px">
+      <div style="font-family:'Playfair Display',serif;font-size:54px;color:${cfg.color};line-height:1" id="em-val">${val}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.08em;margin-top:4px" id="em-desc">${energyDesc(key,val)}</div>
+    </div>
+    <input type="range" min="1" max="${cfg.max}" value="${val}" id="em-slider"
+      oninput="document.getElementById('em-val').textContent=this.value;document.getElementById('em-desc').textContent=energyDesc('${key}',+this.value)"
+      style="margin-bottom:16px">
+    <input type="hidden" id="em-key" value="${key}">
+    <button class="bp" onclick="saveEnergyEntry()">Сохранить</button>
+    <button class="bs" onclick="closeModal()">Отмена</button>
+  `);
+}
+
+function saveEnergyEntry(){
+  const key = document.getElementById('em-key').value;
+  const val = +document.getElementById('em-slider').value;
+  if(!db.energyLogs[today()]) db.energyLogs[today()]={};
+  db.energyLogs[today()][key]=val;
+  save(); closeModal(); renderToday();
+  showToast('⚡ Сохранено!');
+}
+
+// ═══════════════════════════════════════
+// ENERGY PAGE
+// ═══════════════════════════════════════
+function renderEnergy(){
+  const todayE = db.energyLogs[today()]||{};
+  ['energy','mood','sleep','stress'].forEach((k,i)=>{
+    const ids=['es-energy','es-mood','es-sleep','es-stress'];
+    const v=todayE[k];
+    document.getElementById(ids[i]).textContent=v!==undefined?v:'—';
+  });
+
+  // History
+  const el = document.getElementById('energy-history');
+  const keys = Object.keys(db.energyLogs).sort().reverse().slice(0,30);
+  if(keys.length===0){el.innerHTML='<div class="empty"><span class="ei">⚡</span>Начни трекать состояние на вкладке Today</div>';return}
+
+  el.innerHTML = keys.map(dk=>{
+    const e=db.energyLogs[dk]||{};
+    const fmt = new Date(dk).toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'short'});
+    const dots = [
+      {k:'energy',c:'var(--gold)'},
+      {k:'mood',c:'var(--purple)'},
+      {k:'sleep',c:'var(--blue)'},
+      {k:'stress',c:'var(--red)'},
+    ].map(d=>{
+      const v=e[d.k];
+      if(v===undefined)return`<div class="enh-dot" style="background:var(--b);color:var(--muted)">—</div>`;
+      const opacity = 0.3 + v/10*0.7;
+      return`<div class="enh-dot" style="background:${d.c};opacity:${opacity};color:#0e0e0e">${v}</div>`;
+    }).join('');
+    return`<div class="enh-row">
+      <div class="enh-date">${fmt}</div>
+      <div class="enh-dots">${dots}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// HABITS
+// ═══════════════════════════════════════
+const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+function getWeekDates(){
+  const now=new Date(), dow=(now.getDay()+6)%7, dates=[];
+  for(let i=0;i<7;i++){const d=new Date(now);d.setDate(now.getDate()-dow+i);dates.push(d)}
+  return dates;
+}
+
+function renderHabits(){
+  const week = getWeekDates();
+  const todayStr = today();
+  const bestStreak = db.habits.length>0?Math.max(...db.habits.map(calcStreak)):0;
+  document.getElementById('hs-total').textContent=db.habits.length;
+  document.getElementById('hs-best').textContent=bestStreak;
+  document.getElementById('hs-month').textContent=calcMonthPct()+'%';
+
+  // Weekly summary bar chart
+  const ws = document.getElementById('week-summary');
+  const total = db.habits.length||1;
+  const bars = week.map((d,i)=>{
+    const dk=dateKey(d);
+    const cnt=db.habits.filter(h=>h.logs[dk]).length;
+    const pct=Math.round(cnt/total*100);
+    const h=Math.max(4,Math.round(pct/100*28));
+    const isTod=dk===todayStr;
+    return`<div class="ws-bar-wrap">
+      <div class="ws-bar" style="height:${h}px;background:${isTod?'var(--gold)':'var(--teal)'}"></div>
+      <div class="ws-day-lbl" style="color:${isTod?'var(--gold)':'var(--muted)'}">${DAYS[i]}</div>
+    </div>`;
+  }).join('');
+  ws.innerHTML=`<div class="ws-title">Сводка недели</div><div class="ws-bars">${bars}</div>`;
+
+  const el = document.getElementById('habits-list');
+  if(db.habits.length===0){el.innerHTML='<div class="empty"><span class="ei">🔥</span>Добавь первую привычку!</div>';return}
+
+  el.innerHTML=db.habits.map(hb=>{
+    const streak=calcStreak(hb);
+    const weekCells=week.map((d,i)=>{
+      const dk=dateKey(d);
+      const done=!!hb.logs[dk];
+      const isTod=dk===todayStr;
+      return`<div class="dc" onclick="toggleDay('${hb.id}','${dk}')">
+        <div class="dc-lbl">${DAYS[i]}</div>
+        <div class="dc-dot${done?' done':''}${isTod?' today-r':''}">${done?'✓':''}</div>
+      </div>`;
+    }).join('');
+
+    const now2=new Date();
+    const dim=new Date(now2.getFullYear(),now2.getMonth()+1,0).getDate();
+    let mdots='';
+    for(let d=1;d<=dim;d++){
+      const dk=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      mdots+=`<div class="md${hb.logs[dk]?' done':''}${dk===todayStr?' today':''}"></div>`;
+    }
+
+    return`<div class="habit-compact" id="hb-${hb.id}">
+      <div class="hc-header" onclick="toggleHabitExpand('${hb.id}')">
+        <span class="hc-emoji">${hb.emoji}</span>
+        <div class="hc-info">
+          <div class="hc-name">${hb.name}</div>
+          <div class="hc-freq">${freqLbl(hb.freq)}</div>
+        </div>
+        <div class="hc-streak">${streak>0?'🔥'+streak+'д':'—'}</div>
+      </div>
+      <div class="hc-week" id="hw-${hb.id}">${weekCells}</div>
+      <div class="hc-month" id="hm-${hb.id}">${mdots}</div>
+      <div class="hc-actions" id="ha-${hb.id}">
+        <button class="ha" onclick="openHabitStats('${hb.id}')">📊 Стат.</button>
+        <button class="ha" onclick="openEditHabit('${hb.id}')">✏️ Изм.</button>
+        <button class="ha del" onclick="delHabit('${hb.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  renderHeatmap();
+}
+
+function toggleHabitExpand(hid){
+  const week=document.getElementById('hw-'+hid);
+  const month=document.getElementById('hm-'+hid);
+  const actions=document.getElementById('ha-'+hid);
+  const expanded=!week.classList.contains('hidden')&&week.style.display!=='none';
+  // toggle: if week showing, collapse; else expand
+  if(!week.classList.contains('hidden') && week.innerHTML!==''){
+    week.classList.add('hidden'); month.classList.add('hidden'); actions.classList.add('hidden');
+  } else {
+    week.classList.remove('hidden'); month.classList.remove('hidden'); actions.classList.remove('hidden');
+  }
+}
+
+function toggleDay(hid,dk){
+  const hb=db.habits.find(x=>x.id===hid);
+  if(!hb)return;
+  if(hb.logs[dk])delete hb.logs[dk]; else{hb.logs[dk]=1;checkAch()}
+  save(); renderHabits();
+  if(hb.logs[dk]) showToast('✓ '+hb.name);
+}
+
+function renderHeatmap(){
+  const el=document.getElementById('heatmap');
+  const now=new Date();
+  let html='';
+  for(let i=364;i>=0;i--){
+    const d=new Date(now);d.setDate(now.getDate()-i);
+    const dk=dateKey(d);
+    const cnt=db.habits.filter(h=>h.logs[dk]).length;
+    const t=db.habits.length||1;
+    const l=cnt===0?0:cnt>=t?4:cnt>=t*.7?3:cnt>=t*.4?2:1;
+    html+=`<div class="hmc${l?' l'+l:''}" title="${dk}: ${cnt}"></div>`;
+  }
+  el.innerHTML=html;
+}
+
+function calcStreak(hb){
+  let s=0;const now=new Date();
+  for(let i=0;i<400;i++){const d=new Date(now);d.setDate(now.getDate()-i);if(hb.logs[dateKey(d)])s++;else if(i>0)break}
+  return s;
+}
+function calcWeekPct(){
+  if(db.habits.length===0)return 0;
+  const wd=getWeekDates();let done=0,total=0;
+  db.habits.forEach(h=>wd.forEach(d=>{const dk=dateKey(d);if(dk<=today()){total++;if(h.logs[dk])done++}}));
+  return total>0?Math.round(done/total*100):0;
+}
+function calcMonthPct(){
+  if(db.habits.length===0)return 0;
+  const now=new Date();let done=0,total=0;
+  for(let d=1;d<=now.getDate();d++){
+    const dk=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    db.habits.forEach(h=>{total++;if(h.logs[dk])done++});
+  }
+  return total>0?Math.round(done/total*100):0;
+}
+function freqLbl(f){return{daily:'Каждый день','3week':'3 раза в неделю','2week':'2 раза в неделю',weekly:'Раз в неделю'}[f]||f}
+
+const EMOJIS=['🔥','💪','🏋️','🧘','😴','💤','📚','✍️','🎯','🍎','🥗','💧','🏃','🚴','🎸','💊','🧠','🌱','⏰','🌙','📓','💰','🎨','🗣️','🤝','🌅','⚡','🧹','🍳','🌍'];
+
+function openAddHabit(editId){
+  const h=editId?db.habits.find(x=>x.id===editId):null;
+  openModal(`
+    <div class="mt">${h?'Изменить':'Новая'} привычка</div>
+    <div class="fg"><label class="fl">Иконка</label>
+      <div class="ep" id="ep">${EMOJIS.map(e=>`<div class="eo${h&&h.emoji===e?' sel':!h&&e==='🔥'?' sel':''}" onclick="selEmoji(this,'${e}')">${e}</div>`).join('')}</div>
+    </div>
+    <div class="fg"><label class="fl">Название</label><input class="fi fi-single" id="h-name" value="${h?h.name:''}" placeholder="Например: Медитация"></div>
+    <div class="fg"><label class="fl">Частота</label>
+      <select class="fi" id="h-freq">
+        <option value="daily"${(!h||h.freq==='daily')?' selected':''}>Каждый день</option>
+        <option value="3week"${h&&h.freq==='3week'?' selected':''}>3 раза в неделю</option>
+        <option value="2week"${h&&h.freq==='2week'?' selected':''}>2 раза в неделю</option>
+        <option value="weekly"${h&&h.freq==='weekly'?' selected':''}>Раз в неделю</option>
+      </select>
+    </div>
+    <input type="hidden" id="h-eid" value="${editId||''}">
+    <button class="bp" onclick="saveHabit()">${h?'Сохранить':'Создать'}</button>
+    <button class="bs" onclick="closeModal()">Отмена</button>
+  `);
+}
+function openEditHabit(hid){openAddHabit(hid)}
+function selEmoji(el){
+  document.querySelectorAll('.eo').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function saveHabit(){
+  const name=document.getElementById('h-name').value.trim();
+  if(!name){showToast('Введи название!');return}
+  const emoji=(document.querySelector('.eo.sel')||{}).textContent||'🔥';
+  const freq=document.getElementById('h-freq').value;
+  const eid=document.getElementById('h-eid').value;
+  if(eid){const h=db.habits.find(x=>x.id===eid);if(h){h.name=name;h.emoji=emoji;h.freq=freq}}
+  else db.habits.push({id:uid(),emoji,name,freq,color:'teal',logs:{}});
+  save();closeModal();renderHabits();
+  showToast(eid?'✏️ Сохранено!':'✅ Привычка добавлена!');
+  checkAch();
+}
+function delHabit(hid){
+  if(!confirm('Удалить привычку?'))return;
+  db.habits=db.habits.filter(x=>x.id!==hid);
+  save();renderHabits();showToast('🗑 Удалено');
+}
+function openHabitStats(hid){
+  const hb=db.habits.find(x=>x.id===hid);if(!hb)return;
+  const streak=calcStreak(hb);
+  const total=Object.keys(hb.logs).length;
+  const first=Object.keys(hb.logs).sort()[0];
+  let allPct=0;
+  if(first){const days=Math.max(1,Math.round((new Date()-new Date(first))/86400000)+1);allPct=Math.round(total/days*100)}
+  const dots30=()=>{let h='';const now=new Date();for(let i=29;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);const dk=dateKey(d);h+=`<div class="md${hb.logs[dk]?' done':''}" style="width:14px;height:14px;border-radius:3px"></div>`}return h};
+  openModal(`
+    <div class="mt">${hb.emoji} ${hb.name}</div>
+    <div class="sg3" style="margin-bottom:16px">
+      <div class="sb"><div class="sn">${streak}</div><div class="sl">🔥 Стрик</div></div>
+      <div class="sb"><div class="sn">${total}</div><div class="sl">✅ Всего</div></div>
+      <div class="sb"><div class="sn">${allPct}%</div><div class="sl">📊 Всё время</div></div>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px">Последние 30 дней</div>
+    <div class="hc-month" style="display:flex">${dots30()}</div>
+    <button class="bs" onclick="closeModal()">Закрыть</button>
+  `);
+}
+
+// ═══════════════════════════════════════
+// DAILY LOG
+// ═══════════════════════════════════════
+const enDescs={1:'нет сил совсем',2:'очень мало',3:'слабовато',4:'ниже среднего',5:'нормально',6:'неплохо',7:'хорошая энергия',8:'отличная',9:'почти идеально',10:'пиковая форма!'};
+function updateDLEnergy(v){
+  document.getElementById('dl-en-num').textContent=v;
+  document.getElementById('dl-en-desc').textContent=enDescs[v]||'';
+}
+function renderLog(){
+  const t=today(),ex=db.logs.find(l=>l.date===t);
+  if(ex){
+    document.getElementById('dl-slider').value=ex.energy||7;
+    ['done','notdone','gave','took','insight','conclusion'].forEach(k=>{
+      const el=document.getElementById('dl-'+k);if(el)el.value=ex[k]||'';
+    });
+  }
+  updateDLEnergy(document.getElementById('dl-slider').value);
+  renderLogHistory();
+}
+function saveLog(){
+  const t=today();
+  const entry={
+    date:t,energy:+document.getElementById('dl-slider').value,
+    done:document.getElementById('dl-done').value,
+    notdone:document.getElementById('dl-notdone').value,
+    gave:document.getElementById('dl-gave').value,
+    took:document.getElementById('dl-took').value,
+    insight:document.getElementById('dl-insight').value,
+    conclusion:document.getElementById('dl-conclusion').value,
+  };
+  const idx=db.logs.findIndex(l=>l.date===t);
+  if(idx>=0)db.logs[idx]=entry;else db.logs.unshift(entry);
+  save();renderLogHistory();showToast('📓 Запись сохранена!');checkAch();
+}
+function renderLogHistory(){
+  const el=document.getElementById('log-history');
+  if(db.logs.length===0){el.innerHTML='<div class="empty"><span class="ei">📓</span>Нет записей</div>';return}
+  el.innerHTML=db.logs.slice(0,25).map(l=>{
+    const fmt=new Date(l.date).toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'short'});
+    const cls=l.energy>=8?'e-high':l.energy>=5?'e-mid':'e-low';
+    const prev=l.conclusion||l.insight||l.done||'...';
+    return`<div class="le ${cls}" onclick="viewLog('${l.date}')">
+      <div class="le-top"><span class="le-date">${fmt}</span><span class="le-en">${l.energy}/10</span></div>
+      <div class="le-preview">${prev}</div>
+    </div>`;
+  }).join('');
+}
+function viewLog(date){
+  const l=db.logs.find(x=>x.date===date);if(!l)return;
+  const fmt=new Date(l.date).toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+  const row=(q,v)=>v?`<div class="dq">${q}</div><div class="da" style="margin-bottom:10px">${v}</div>`:'';
+  openModal(`
+    <div class="mt" style="font-size:17px">${fmt}</div>
+    <div style="font-family:'Playfair Display',serif;font-size:36px;color:var(--gold);margin-bottom:14px">Энергия: ${l.energy}/10</div>
+    ${row('✅ Сделал',l.done)}${row('❌ Не сделал',l.notdone)}
+    ${row('⚡ Дало энергию',l.gave)}${row('🕳 Забрало энергию',l.took)}
+    ${row('💡 Понял',l.insight)}${row('🏆 Вывод',l.conclusion)}
+    <button class="bs" onclick="closeModal()">Закрыть</button>
+  `);
+}
+
+// ═══════════════════════════════════════
+// WINS
+// ═══════════════════════════════════════
+function renderWins(){
+  const big=db.wins.filter(w=>w.size==='big').length;
+  const med=db.wins.filter(w=>w.size==='med').length;
+  const small=db.wins.filter(w=>w.size==='small').length;
+  document.getElementById('ws-big').textContent=big;
+  document.getElementById('ws-med').textContent=med;
+  document.getElementById('ws-small').textContent=small;
+
+  // mini achievements
+  const unlocked=Object.keys(db.achievements).length;
+  const miniAchs=ACH_DEFS.slice(0,6);
+  document.getElementById('ach-mini').innerHTML=miniAchs.map(a=>{
+    const isUn=!!db.achievements[a.id];
+    return`<div class="ai${isUn?' un':' ai-locked'}" title="${a.desc}">
+      <div class="ai-ico">${a.icon}</div>
+      <div class="ai-name">${a.name}</div>
+    </div>`;
+  }).join('');
+
+  const el=document.getElementById('wins-list');
+  if(db.wins.length===0){el.innerHTML='<div class="empty"><span class="ei">🏆</span>Запиши первую победу!<br><span style="font-size:11px">Даже маленькую — это важно</span></div>';return}
+  el.innerHTML=db.wins.slice(0,30).map(w=>{
+    const fmt=new Date(w.date).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+    const sizeClass={'big':'ws-big','med':'ws-med','small':'ws-small'}[w.size];
+    const sizeLabel={'big':'🔥 Большая','med':'⚡ Средняя','small':'✨ Малая'}[w.size];
+    return`<div class="win-item" onclick="deleteWinConfirm('${w.id}')">
+      <div class="win-top">
+        <span class="win-size ${sizeClass}">${sizeLabel}</span>
+        <span class="win-date">${fmt}</span>
+      </div>
+      <div class="win-text">${w.text}</div>
+    </div>`;
+  }).join('');
+}
+function openAddWin(){
+  openModal(`
+    <div class="mt">🏆 Победа</div>
+    <div class="fg"><label class="fl">Что произошло?</label>
+      <textarea class="fi" id="win-text" placeholder="Даже маленькая победа важна..."></textarea></div>
+    <div class="fg"><label class="fl">Масштаб</label>
+      <select class="fi" id="win-size">
+        <option value="big">🔥 Большая — серьёзный результат</option>
+        <option value="med" selected>⚡ Средняя — заметный шаг</option>
+        <option value="small">✨ Малая — маленькое действие</option>
+      </select>
+    </div>
+    <button class="bp" onclick="saveWin()">Записать победу</button>
+    <button class="bs" onclick="closeModal()">Отмена</button>
+  `);
+}
+function saveWin(){
+  const text=document.getElementById('win-text').value.trim();
+  if(!text){showToast('Опиши победу!');return}
+  db.wins.unshift({id:uid(),text,size:document.getElementById('win-size').value,date:today()});
+  save();closeModal();renderWins();showToast('🏆 Победа записана!');checkAch();
+}
+function deleteWinConfirm(wid){
+  if(!confirm('Удалить эту победу?'))return;
+  db.wins=db.wins.filter(x=>x.id!==wid);
+  save();renderWins();
+}
+
+// ═══════════════════════════════════════
+// GOALS
+// ═══════════════════════════════════════
+const GOAL_CATS=['💚 Здоровье','💼 Карьера','🌱 Личность','📱 Контент','💰 Финансы','🧠 Развитие'];
+const GOAL_COLORS={'💚 Здоровье':'teal','💼 Карьера':'gold','🌱 Личность':'purple','📱 Контент':'gold','💰 Финансы':'teal','🧠 Развитие':'blue'};
+
+function renderGoals(){
+  const el=document.getElementById('goals-list');
+  if(db.goals.length===0){el.innerHTML='<div class="empty"><span class="ei">🎯</span>Добавь конкретные цели!</div>';return}
+  const cats=[...new Set(db.goals.map(g=>g.cat))];
+  el.innerHTML=cats.map(cat=>{
+    const goals=db.goals.filter(g=>g.cat===cat);
+    return`<div class="card">
+      <div style="font-family:'Playfair Display',serif;font-size:17px;margin-bottom:10px">${cat}</div>
+      ${goals.map(g=>`
+        <div class="goal-item">
+          <div class="goal-dot" style="background:var(--${g.color||'gold'})"></div>
+          <div style="flex:1;min-width:0">
+            <div class="goal-text">${g.text}</div>
+            <div class="goal-metric">${g.metric||''}</div>
+          </div>
+          <div class="gpbar"><div class="gpfill" style="width:${g.pct}%;background:var(--${g.color||'gold'})"></div></div>
+          <div class="gpct">${g.pct}%</div>
+          <button onclick="editGoal('${g.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:0 3px">✏️</button>
+          <button onclick="delGoal('${g.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 3px">🗑</button>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+function openAddGoal(){
+  openModal(`
+    <div class="mt">Новая цель</div>
+    <div style="background:rgba(200,169,110,.08);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--muted);font-style:italic">
+      💡 Делай измеримо:<br>❌ «развить дисциплину»<br>✅ «30 дней Daily Log подряд»
+    </div>
+    <div class="fg"><label class="fl">Категория</label>
+      <select class="fi" id="g-cat">${GOAL_CATS.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
+    <div class="fg"><label class="fl">Цель (измеримо)</label>
+      <input class="fi fi-single" id="g-text" placeholder="30 дней Daily Log подряд"></div>
+    <div class="fg"><label class="fl">Метрика / прогресс</label>
+      <input class="fi fi-single" id="g-metric" placeholder="0/30 дней"></div>
+    <div class="fg"><label class="fl">Прогресс: <span id="g-pct-lbl">0</span>%</label>
+      <input type="range" min="0" max="100" value="0" id="g-pct" oninput="document.getElementById('g-pct-lbl').textContent=this.value"></div>
+    <button class="bp" onclick="saveGoal()">Добавить цель</button>
+    <button class="bs" onclick="closeModal()">Отмена</button>
+  `);
+}
+function editGoal(gid){
+  const g=db.goals.find(x=>x.id===gid);if(!g)return;
+  openModal(`
+    <div class="mt">Обновить цель</div>
+    <div class="fg"><label class="fl">Цель</label><input class="fi fi-single" id="g-text" value="${g.text}"></div>
+    <div class="fg"><label class="fl">Метрика</label><input class="fi fi-single" id="g-metric" value="${g.metric||''}"></div>
+    <div class="fg"><label class="fl">Прогресс: <span id="g-pct-lbl">${g.pct}</span>%</label>
+      <input type="range" min="0" max="100" value="${g.pct}" id="g-pct" oninput="document.getElementById('g-pct-lbl').textContent=this.value"></div>
+    <input type="hidden" id="g-eid" value="${gid}">
+    <button class="bp" onclick="saveGoal()">Сохранить</button>
+    <button class="bs" onclick="closeModal()">Отмена</button>
+  `);
+}
+function saveGoal(){
+  const eid=(document.getElementById('g-eid')||{}).value;
+  if(eid){
+    const g=db.goals.find(x=>x.id===eid);
+    if(g){g.text=document.getElementById('g-text').value;g.metric=document.getElementById('g-metric').value;g.pct=+document.getElementById('g-pct').value}
+  } else {
+    const text=document.getElementById('g-text').value.trim();
+    if(!text){showToast('Введи цель!');return}
+    const cat=document.getElementById('g-cat').value;
+    db.goals.push({id:uid(),cat,text,metric:document.getElementById('g-metric').value,pct:+document.getElementById('g-pct').value,color:GOAL_COLORS[cat]||'gold'});
+  }
+  save();closeModal();renderGoals();showToast('🎯 Цель сохранена!');
+  if(db.goals.some(g=>g.pct>=100))checkAch();
+}
+function delGoal(gid){
+  if(!confirm('Удалить цель?'))return;
+  db.goals=db.goals.filter(x=>x.id!==gid);save();renderGoals();
+}
+
+// ═══════════════════════════════════════
+// LIFE
+// ═══════════════════════════════════════
+const LIFE_CATS=['📍 Место','🤝 Знакомство','🎉 Событие','✈️ Поездка','💕 Свидание','🎨 Впечатление','🌱 Новый опыт'];
+
+function renderLife(){
+  const items=db.life||[];
+  const places=items.filter(i=>i.cat&&i.cat.includes('Место')).length;
+  const people=items.filter(i=>i.cat&&i.cat.includes('Знакомство')).length;
+  const events=items.filter(i=>i.cat&&(i.cat.includes('Событие')||i.cat.includes('Поездка'))).length;
+  document.getElementById('ls-places').textContent=places;
+  document.getElementById('ls-people').textContent=people;
+  document.getElementById('ls-events').textContent=events;
+
+  const el=document.getElementById('life-list');
+  if(items.length===0){el.innerHTML='<div class="empty"><span class="ei">🌍</span>Жизнь за пределами системы<br><span style="font-size:11px">Добавь место, человека или событие</span></div>';return}
+  el.innerHTML=items.slice().reverse().slice(0,30).map(item=>{
+    const fmt=new Date(item.date).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+    return`<div class="life-item" onclick="delLife('${item.id}')">
+      <div class="li-top"><span class="li-cat">${item.cat}</span><span class="li-date">${fmt}</span></div>
+      <div class="li-text">${item.text}</div>
+    </div>`;
+  }).join('');
+}
+function openAddLife(){
+  openModal(`
+    <div class="mt">🌍 Момент жизни</div>
+    <div class="fg"><label class="fl">Категория</label>
+      <select class="fi" id="li-cat">${LIFE_CATS.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
+    <div class="fg"><label class="fl">Опиши</label>
+      <textarea class="fi" id="li-text" placeholder="Что случилось? Где был? Кого встретил?"></textarea></div>
+    <button class="bp" onclick="saveLife()">Записать</button>
+    <button class="bs" onclick="closeModal()">Отмена</button>
+  `);
+}
+function saveLife(){
+  const text=document.getElementById('li-text').value.trim();
+  if(!text){showToast('Опиши момент!');return}
+  if(!db.life)db.life=[];
+  db.life.push({id:uid(),cat:document.getElementById('li-cat').value,text,date:today()});
+  save();closeModal();renderLife();showToast('🌍 Момент записан!');
+}
+function delLife(lid){
+  if(!confirm('Удалить?'))return;
+  db.life=db.life.filter(x=>x.id!==lid);save();renderLife();
+}
+
+// ═══════════════════════════════════════
+// MONEY
+// ═══════════════════════════════════════
+function renderMoney(){
+  const now=new Date();
+  const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const txs=(db.money.transactions||[]).filter(t=>t.date.startsWith(ym));
+  const income=txs.filter(t=>t.type==='in').reduce((s,t)=>s+t.amount,0);
+  const expenses=txs.filter(t=>t.type==='out').reduce((s,t)=>s+t.amount,0);
+  document.getElementById('m-income').textContent=income.toLocaleString('ru');
+  document.getElementById('m-expenses').textContent=expenses.toLocaleString('ru');
+  document.getElementById('m-balance').textContent=(income-expenses).toLocaleString('ru');
+
+  const el=document.getElementById('tx-list');
+  const all=db.money.transactions||[];
+  if(all.length===0){el.innerHTML='<div class="empty"><span class="ei">💰</span>Добавь первую транзакцию</div>';return}
+  el.innerHTML=all.slice().reverse().slice(0,20).map(t=>{
+    const fmt=new Date(t.date).toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+    return`<div class="tx-item">
+      <div class="tx-emoji">${t.emoji||'💳'}</div>
+      <div class="tx-info"><div class="tx-name">${t.name}</div><div class="tx-date">${fmt}</div></div>
+      <div class="tx-amount ${t.type==='in'?'tx-in':'tx-out'}">${t.type==='in'?'+':'−'}${t.amount.toLocaleString('ru')} ₽</div>
+    </div>`;
+  }).join('');
+}
+const TX_EMOJIS=['💰','💳','🏠','🍕','☕','🚗','✈️','🎬','👔','💊','📱','🎓','💪','🛒','🎁'];
+function openAddTx(){
+  openModal(`
+    <div class="mt">Транзакция</div>
+    <div class="fg"><label class="fl">Тип</label>
+      <select class="fi" id="tx-type"><option value="in">➕ Доход</option><option value="out">➖ Расход</option></select></div>
+    <div class="fg"><label class="fl">Иконка</label>
+      <div class="ep">${TX_EMOJIS.map((e,i)=>`<div class="eo${i===0?' sel':''}" onclick="selEmoji(this,'${e}')">${e}</div>`).join('')}</div></div>
+    <div class="fg"><label class="fl">Название</label><input class="fi fi-single" id="tx-name" placeholder="Зарплата / Кофе / Аренда"></div>
+    <div class="fg"><label class="fl">Сумма ₽</label><input class="fi fi-single" type="number" id="tx-amount" placeholder="10000"></div>
+    <button class="bp" onclick="saveTx()">Добавить</button>
+    <button class="bs" onclick="closeModal()">Отмена</button>
+  `);
+}
+function saveTx(){
+  const name=document.getElementById('tx-name').value.trim();
+  const amount=+document.getElementById('tx-amount').value;
+  if(!name||!amount){showToast('Заполни все поля!');return}
+  if(!db.money.transactions)db.money.transactions=[];
+  const emoji=(document.querySelector('.eo.sel')||{}).textContent||'💳';
+  db.money.transactions.push({id:uid(),type:document.getElementById('tx-type').value,name,amount,emoji,date:today()});
+  save();closeModal();renderMoney();showToast('💰 Записано!');
+}
+
+// ═══════════════════════════════════════
+// CONTENT
+// ═══════════════════════════════════════
+function renderContent(){
+  const stats={ideas:0,wip:0,posted:0};
+  db.content.forEach(c=>{if(stats[c.status]!==undefined)stats[c.status]++});
+  document.getElementById('cc-ideas').textContent=stats.ideas;
+  document.getElementById('cc-wip').textContent=stats.wip;
+  document.getElementById('cc-posted').textContent=stats.posted;
+  ['ideas','wip','posted'].forEach(s=>{
+    const items=db.content.filter(c=>c.status===s);
+    const el=document.getElementById('k-'+s);
+    if(items.length===0){el.innerHTML='<div class="empty" style="padding:16px 0"><span class="ei" style="font-size:28px">📭</span>Пусто</div>';return}
+    el.innerHTML=items.map(c=>`
+      <div class="kc" onclick="editContent('${c.id}')">
+        <div class="kc-text">${c.text}</div>
+        <div class="kc-meta">
+          <span class="k-tag ${c.tag}">${c.tag.toUpperCase()}</span>
+          <span style="flex:1"></span>
+          ${s!=='wip'?`<button class="kc-btn" onclick="event.stopPropagation();moveC('${c.id}','wip')">→ В работу</button>`:''}
+          ${s!=='posted'?`<button class="kc-btn posted" onclick="event.stopPropagation();moveC('${c.id}','posted')">✅ Опубл.</button>`:''}
+          <button class="kc-btn" onclick="event.stopPropagation();delContent('${c.id}')">🗑</button>
+        </div>
+      </div>`).join('');
+  });
+}
+function switchK(col,btn){
+  document.querySelectorAll('.kt').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.kcol').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('kc-'+col).classList.add('active');
+}
+function openAddContent(){
+  openModal(`
+    <div class="mt">Новая идея</div>
+    <div class="fg"><label class="fl">Идея</label><textarea class="fi" id="c-text" placeholder="О чём пост или видео?"></textarea></div>
+    <div class="fg"><label class="fl">Платформа</label>
+      <select class="fi" id="c-tag"><option value="tg">Telegram</option><option value="ig">Instagram</option><option value="idea">Идея</option></select></div>
+    <button class="bp" onclick="saveContent()">Добавить</button>
+    <button class="bs" onclick="closeModal()">Отмена</button>
+  `);
+}
+function editContent(cid){
+  const c=db.content.find(x=>x.id===cid);if(!c)return;
+  openModal(`
+    <div class="mt">Редактировать</div>
+    <div class="fg"><label class="fl">Текст</label><textarea class="fi" id="c-text">${c.text}</textarea></div>
+    <div class="fg"><label class="fl">Платформа</label>
+      <select class="fi" id="c-tag"><option value="tg"${c.tag==='tg'?' selected':''}>Telegram</option><option value="ig"${c.tag==='ig'?' selected':''}>Instagram</option><option value="idea"${c.tag==='idea'?' selected':''}>Идея</option></select></div>
+    <input type="hidden" id="c-eid" value="${cid}">
+    <button class="bp" onclick="saveContent()">Сохранить</button>
+    <button class="bs" onclick="closeModal()">Отмена</button>
+  `);
+}
+function saveContent(){
+  const text=document.getElementById('c-text').value.trim();
+  if(!text){showToast('Введи текст!');return}
+  const tag=document.getElementById('c-tag').value;
+  const eid=(document.getElementById('c-eid')||{}).value;
+  if(eid){const c=db.content.find(x=>x.id===eid);if(c){c.text=text;c.tag=tag}}
+  else db.content.unshift({id:uid(),text,tag,status:'ideas'});
+  save();closeModal();renderContent();showToast('💡 Сохранено!');checkAch();
+}
+function moveC(cid,status){
+  const c=db.content.find(x=>x.id===cid);
+  if(c){c.status=status;save();renderContent();showToast(status==='posted'?'✅ Опубликовано!':'✏️ В работе')}
+}
+function delContent(cid){db.content=db.content.filter(x=>x.id!==cid);save();renderContent()}
+
+// ═══════════════════════════════════════
+// DECISIONS
+// ═══════════════════════════════════════
+function renderDecisions(){
+  const el=document.getElementById('decisions-list');
+  if(db.decisions.length===0){el.innerHTML='<div class="empty"><span class="ei">🧠</span>Нет решений</div>';return}
+  el.innerHTML=db.decisions.map(d=>{
+    const fmt=new Date(d.date).toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'});
+    return`<div class="dcard" onclick="viewDecision('${d.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">${fmt}</div>
+        <span class="dstatus ${d.done?'dd':'dp'}">${d.done?'✓ проверено':'⏳ ждём'}</span>
+      </div>
+      <div class="dq">Решение</div><div class="da">${d.decision}</div>
+      ${d.result?`<div class="dq" style="margin-top:7px">Результат</div><div class="da">${d.result}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function viewDecision(did){
+  const d=db.decisions.find(x=>x.id===did);if(!d)return;
+  const fmt=new Date(d.date).toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  openModal(`
+    <div class="mt">🧠 Решение</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px">${fmt}</div>
+    <div class="dq">Решение</div><div class="da" style="margin-bottom:10px">${d.decision}</div>
+    <div class="dq">Почему</div><div class="da" style="margin-bottom:10px">${d.why}</div>
+    <div class="dq">Ожидание</div><div class="da" style="margin-bottom:10px">${d.expect}</div>
+    <div class="dq">Результат</div>
+    <textarea class="fi" id="d-result" placeholder="Заполни позже...">${d.result||''}</textarea>
+    <label style="display:flex;align-items:center;gap:8px;margin:10px 0;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">
+      <input type="checkbox" id="d-done" ${d.done?'checked':''} style="width:17px;height:17px;accent-color:var(--teal)">
+      Отметить как проверенное
+    </label>
+    <input type="hidden" id="d-eid" value="${did}">
+    <button class="bp" onclick="saveDecision()">Сохранить</button>
+    <button class="bs" style="color:var(--red)" onclick="delDecision('${did}');closeModal()">🗑 Удалить</button>
+    <button class="bs" onclick="closeModal()">Закрыть</button>
+  `);
+}
+function saveDecision(){
+  const eid=document.getElementById('d-eid').value;
+  const d=db.decisions.find(x=>x.id===eid);
+  if(d){d.result=document.getElementById('d-result').value;d.done=document.getElementById('d-done').checked;save();closeModal();renderDecisions();showToast('💾 Сохранено!')}
+}
+function delDecision(did){db.decisions=db.decisions.filter(x=>x.id!==did);save();renderDecisions()}
+function openAddDecision(){
+  openModal(`
+    <div class="mt">Новое решение</div>
+    <div class="fg"><label class="fl">📌 Решение</label><textarea class="fi" id="d-dec" placeholder="Описание..."></textarea></div>
+    <div class="fg"><label class="fl">💭 Почему?</label><textarea class="fi" id="d-why" placeholder="Логика..."></textarea></div>
+    <div class="fg"><label class="fl">🔮 Ожидание</label><textarea class="fi" id="d-exp" placeholder="Результат через..."></textarea></div>
+    <button class="bp" onclick="saveNewDecision()">Записать</button>
+    <button class="bs" onclick="closeModal()">Отмена</button>
+  `);
+}
+function saveNewDecision(){
+  const dec=document.getElementById('d-dec').value.trim();
+  if(!dec){showToast('Введи решение!');return}
+  db.decisions.unshift({id:uid(),date:today(),decision:dec,why:document.getElementById('d-why').value,expect:document.getElementById('d-exp').value,result:'',done:false});
+  save();closeModal();renderDecisions();showToast('🧠 Записано!');checkAch();
+}
+
+// ═══════════════════════════════════════
+// ACHIEVEMENTS
+// ═══════════════════════════════════════
+const ACH_DEFS=[
+  {id:'h_first',group:'🔥 Привычки',icon:'🌱',name:'Первый шаг',desc:'1 день'},
+  {id:'h_7',group:'🔥 Привычки',icon:'🔥',name:'Неделя',desc:'7 дней стрик'},
+  {id:'h_14',group:'🔥 Привычки',icon:'💪',name:'Две недели',desc:'14 дней'},
+  {id:'h_30',group:'🔥 Привычки',icon:'🏆',name:'Месяц силы',desc:'30 дней'},
+  {id:'h_100',group:'🔥 Привычки',icon:'💎',name:'Легенда',desc:'100 дней'},
+  {id:'ncm_done',group:'🌅 Morning',icon:'🌅',name:'Тихий час',desc:'No Chaos Morning'},
+  {id:'ncm_7',group:'🌅 Morning',icon:'☀️',name:'Неделя утра',desc:'7 дней NCM'},
+  {id:'l_first',group:'📓 Дневник',icon:'🌙',name:'Первая запись',desc:''},
+  {id:'l_7',group:'📓 Дневник',icon:'📖',name:'7 записей',desc:''},
+  {id:'l_30',group:'📓 Дневник',icon:'🧘',name:'30 записей',desc:''},
+  {id:'w_first',group:'🏆 Победы',icon:'✨',name:'Первая победа',desc:''},
+  {id:'w_10',group:'🏆 Победы',icon:'🌟',name:'10 побед',desc:''},
+  {id:'e_first',group:'⚡ Энергия',icon:'⚡',name:'Первый чек',desc:''},
+  {id:'e_7',group:'⚡ Энергия',icon:'📊',name:'7 дней трекинга',desc:''},
+  {id:'c_posted',group:'✍️ Контент',icon:'📣',name:'Опубликовал!',desc:''},
+  {id:'g_100',group:'🎯 Цели',icon:'🏅',name:'100%!',desc:'Достиг цели'},
+  {id:'life_first',group:'🌍 Life',icon:'🗺',name:'Первый момент',desc:''},
+  {id:'d_first',group:'🧠 Решения',icon:'🧠',name:'Мыслитель',desc:''},
+];
+
+function checkAch(){
+  const unlock=(id)=>{
+    if(!db.achievements[id]){
+      db.achievements[id]=today();save();
+      const def=ACH_DEFS.find(a=>a.id===id);
+      if(def)showToast(`🏆 ${def.icon} ${def.name}!`);
+    }
+  };
+  const maxS=db.habits.length>0?Math.max(...db.habits.map(calcStreak)):0;
+  if(maxS>=1)unlock('h_first');
+  if(maxS>=7)unlock('h_7');
+  if(maxS>=14)unlock('h_14');
+  if(maxS>=30)unlock('h_30');
+  if(maxS>=100)unlock('h_100');
+  if(db.ncm?.done)unlock('ncm_done');
+  if(db.logs.length>=1)unlock('l_first');
+  if(db.logs.length>=7)unlock('l_7');
+  if(db.logs.length>=30)unlock('l_30');
+  if(db.wins.length>=1)unlock('w_first');
+  if(db.wins.length>=10)unlock('w_10');
+  if(Object.keys(db.energyLogs).length>=1)unlock('e_first');
+  if(Object.keys(db.energyLogs).length>=7)unlock('e_7');
+  if(db.content.some(c=>c.status==='posted'))unlock('c_posted');
+  if(db.goals.some(g=>g.pct>=100))unlock('g_100');
+  if((db.life||[]).length>=1)unlock('life_first');
+  if(db.decisions.length>=1)unlock('d_first');
+}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+function renderSettings(){
+  ['log','morning','energy'].forEach(k=>{
+    const el=document.getElementById('tgl-'+k);
+    if(db.notifs[k])el.classList.add('on');else el.classList.remove('on');
+  });
+}
+function toggleN(k){db.notifs[k]=!db.notifs[k];save();renderSettings();if(db.notifs[k])reqNotif()}
+function reqNotif(){
+  if(!('Notification' in window)){showToast('Уведомления не поддерживаются');return}
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){showToast('🔔 Уведомления включены!');schedNotifs()}
+    else showToast('Разреши уведомления в настройках браузера')
+  });
+}
+function schedNotifs(){
+  setInterval(()=>{
+    const now=new Date();const hh=now.getHours(),mm=now.getMinutes();
+    if(db.notifs.morning&&hh===9&&mm===0)notify('☀️ Доброе утро!','Отметь привычки и состояние');
+    if(db.notifs.energy&&hh===12&&mm===0)notify('⚡ Energy check-in','Как твоё состояние сейчас?');
+    if(db.notifs.log&&hh===21&&mm===0&&!db.logs.find(l=>l.date===today()))notify('📓 Daily Log','5 минут честности — время записи');
+  },60000);
+}
+function notify(t,b){if(Notification.permission==='granted')new Notification(t,{body:b,icon:''})}
+function exportData(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));
+  a.download='personal-os-backup-'+today()+'.json';a.click();showToast('📤 Экспортировано!');
+}
+function confirmReset(){
+  if(confirm('Сбросить ВСЕ данные?')){
+    if(confirm('Точно? Это нельзя отменить!')){
+      localStorage.removeItem(DB_KEY);db=defDB();save();gotoPage('today');showToast('🗑 Сброшено');
+    }
+  }
+}
+
+// ═══════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════
+function openModal(html){
+  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+function closeMOBg(e){if(e.target===document.getElementById('modal'))closeModal()}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+let toastT;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ═══════════════════════════════════════
+// TOPBAR DATE
+// ═══════════════════════════════════════
+function setDate(){
+  const d=new Date();
+  const days=['вс','пн','вт','ср','чт','пт','сб'];
+  const months=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+  document.getElementById('tb-date').textContent=days[d.getDay()]+', '+d.getDate()+' '+months[d.getMonth()];
+}
+
+// ═══════════════════════════════════════
+// PWA SERVICE WORKER (inline)
+// ═══════════════════════════════════════
+if('serviceWorker' in navigator){
+  try{
+    const swCode=`const C='pos-v2';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{self.clients.claim()});self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>new Response('',{status:200})))});`;
+    const swBlob=new Blob([swCode],{type:'application/javascript'});
+    navigator.serviceWorker.register(URL.createObjectURL(swBlob));
+  }catch(e){console.log('SW:',e)}
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+setDate();
+resetNCMIfNeeded();
+renderToday();
+checkAch();
+schedNotifs();
+
+// Resume NCM timer if active
+if(db.ncm?.active && !db.ncm?.done){
+  ncmInterval = setInterval(()=>{
+    const elapsed=Math.floor((Date.now()-db.ncm.startedAt)/1000);
+    const remaining=Math.max(0,3600-elapsed);
+    const m=Math.floor(remaining/60),s=remaining%60;
+    const el=document.getElementById('ncm-timer');
+    if(el)el.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if(remaining===0){clearInterval(ncmInterval);ncmDone()}
+  },1000);
+}
+</script>
+</body>
+</html>
